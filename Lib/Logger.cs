@@ -1,19 +1,19 @@
 ﻿using System;
-
-
-
+using System.Diagnostics;
 
 namespace ScienceChecklist
 {
 	/// <summary>
 	/// Class for helping with log messages.
 	/// </summary>
-	internal sealed class Logger {
+	internal sealed class Logger
+	{
 		/// <summary>
 		/// Creates a new instance of the Logger class.
 		/// </summary>
 		/// <param name="parent">The owner of this logger.</param>
-		public Logger (object parent) {
+		public Logger(object parent)
+		{
 			_ownerName = parent.GetType().Name;
 		}
 
@@ -21,7 +21,8 @@ namespace ScienceChecklist
 		/// Creates a new instance of the Logger class to be used by static classes.
 		/// </summary>
 		/// <param name="parentName">The name of the parent.</param>
-		public Logger (string parentName) {
+		public Logger(string parentName)
+		{
 			_ownerName = parentName;
 		}
 
@@ -31,7 +32,8 @@ namespace ScienceChecklist
 		/// Writes a log message at the Fatal level.
 		/// </summary>
 		/// <param name="message">The message to write.</param>
-		public void Fatal (string message) {
+		public void Fatal(string message)
+		{
 			WriteMessage(message, LogLevel.Fatal);
 		}
 
@@ -39,7 +41,8 @@ namespace ScienceChecklist
 		/// Writes a log message at the Error level.
 		/// </summary>
 		/// <param name="message">The message to write.</param>
-		public void Error (string message) {
+		public void Error(string message)
+		{
 			WriteMessage(message, LogLevel.Error);
 		}
 
@@ -47,7 +50,8 @@ namespace ScienceChecklist
 		/// Writes a log message at the Warning level.
 		/// </summary>
 		/// <param name="message">The message to write.</param>
-		public void Warning (string message) {
+		public void Warning(string message)
+		{
 			WriteMessage(message, LogLevel.Warning);
 		}
 
@@ -55,7 +59,8 @@ namespace ScienceChecklist
 		/// Writes a log message at the Info level.
 		/// </summary>
 		/// <param name="message">The message to write.</param>
-		public void Info (string message) {
+		public void Info(string message)
+		{
 			WriteMessage(message, LogLevel.Info);
 		}
 
@@ -63,7 +68,9 @@ namespace ScienceChecklist
 		/// Writes a log message at the Debug level.
 		/// </summary>
 		/// <param name="message">The message to write.</param>
-		public void Debug (string message) {
+		[Conditional("DEBUG")]
+		public void Debug(string message)
+		{
 			WriteMessage(message, LogLevel.Debug);
 		}
 
@@ -71,7 +78,9 @@ namespace ScienceChecklist
 		/// Writes a log message at the Trace level.
 		/// </summary>
 		/// <param name="message">The message to write.</param>
-		public void Trace (string message) {
+		[Conditional("DEBUG")]
+		public void Trace(string message)
+		{
 			WriteMessage(message, LogLevel.Trace);
 		}
 
@@ -84,24 +93,29 @@ namespace ScienceChecklist
 		/// </summary>
 		/// <param name="message">The message to write.</param>
 		/// <param name="logLevel">The log level at which the log should be written.</param>
-		private void WriteMessage (string message, LogLevel logLevel) {
-			if (logLevel > MaxLogLevel) {
+		private void WriteMessage(string message, LogLevel logLevel)
+		{
+			if (logLevel > MaxLogLevel)
+			{
 				return;
 			}
 			var msg = GetMessage (message, logLevel);
-			switch (logLevel) {
-				case LogLevel.Fatal:
-				case LogLevel.Error:
-					UnityEngine.Debug.LogError( msg );
-					break;
-				case LogLevel.Warning:
-				case LogLevel.Info:
-					UnityEngine.Debug.LogWarning( msg );
-					break;
-				case LogLevel.Debug:
-				case LogLevel.Trace:
-					UnityEngine.Debug.Log( msg );
-					break;
+			switch (logLevel)
+			{
+			case LogLevel.Fatal:
+			case LogLevel.Error:
+				UnityEngine.Debug.LogError(msg);
+				break;
+			case LogLevel.Warning:
+				UnityEngine.Debug.LogWarning(msg);
+				break;
+			case LogLevel.Info:
+#if DEBUG
+			case LogLevel.Debug:
+			case LogLevel.Trace:
+#endif
+				UnityEngine.Debug.Log(msg);
+				break;
 			}
 		}
 
@@ -111,7 +125,8 @@ namespace ScienceChecklist
 		/// <param name="message">The log message to be written.</param>
 		/// <param name="logLevel">The log level at which the log should be written.</param>
 		/// <returns>The formatted message.</returns>
-		private string GetMessage (string message, LogLevel logLevel) {
+		private string GetMessage(string message, LogLevel logLevel)
+		{
 			return string.Format("[{0} [x] Science!]: <{1}> ({2}) - {3}", DateTime.Now, logLevel, _ownerName, message);
 		}
 
@@ -121,7 +136,11 @@ namespace ScienceChecklist
 
 		private readonly string _ownerName;
 
+#if DEBUG
 		private const LogLevel MaxLogLevel = LogLevel.Trace;
+#else
+		private const LogLevel MaxLogLevel = LogLevel.Info;
+#endif
 
 		#endregion
 

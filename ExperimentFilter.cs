@@ -219,17 +219,20 @@ namespace ScienceChecklist {
         {
             var foundData = new List<ScienceData>();
 
-            if (FlightGlobals.ActiveVessel != null)
+			var v = FlightGlobals.ActiveVessel;
+			if (v)
             {
-                var containers = FlightGlobals.ActiveVessel.FindPartModulesImplementing<IScienceDataContainer>();
-
-                foreach (var container in containers)
-                {
+                foreach (var container in v.FindPartModulesImplementing<IScienceDataContainer>())
                     foundData.AddRange(container.GetData());
-                }
-            }
+				var eva = v.EVALadderVessel;
+				if (eva != v)
+				{
+					foreach (var container in eva.FindPartModulesImplementing<IScienceDataContainer>())
+						foundData.AddRange(container.GetData());
+				}
+			}
 
-            return foundData;
+			return foundData;
         }
 
 

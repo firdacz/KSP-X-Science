@@ -125,6 +125,7 @@ namespace ScienceChecklist
 				return;
 			}
 
+			vessel = vessel.EVALadderVessel;
 			var celestialBody = vessel.mainBody;
 			var situation = ScienceUtil.GetExperimentSituation( vessel );
 
@@ -160,13 +161,25 @@ namespace ScienceChecklist
             {
                 _nextOnboardDataUpdate = DateTime.MaxValue;
 
-                if (FlightGlobals.ActiveVessel != null)
+				var v = FlightGlobals.ActiveVessel;
+				if (v)
                 {
-                    int[] newData = FlightGlobals.ActiveVessel.FindPartModulesImplementing<IScienceDataContainer>()
+                    var newData = FlightGlobals.ActiveVessel.FindPartModulesImplementing<IScienceDataContainer>()
                         .Select(sdc => sdc.GetData().Length)
                         .ToArray();
+					var eva = v.EVALadderVessel;
+					if (eva != v)
+					{
+						var newData2 = FlightGlobals.ActiveVessel.FindPartModulesImplementing<IScienceDataContainer>()
+							.Select(sdc => sdc.GetData().Length)
+							.ToArray();
+						if (newData.Length == 0)
+							newData = newData2;
+						else if (newData2.Length > 0)
+							newData = newData.Concat(newData2).ToArray();
+					}
 
-                    if (!Enumerable.SequenceEqual(newData, _onboardData))
+					if (!Enumerable.SequenceEqual(newData, _onboardData))
                     {
                         _onboardData = newData;
                         ScheduleExperimentUpdate(false, 0.11f);
