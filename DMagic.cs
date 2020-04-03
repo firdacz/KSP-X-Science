@@ -22,7 +22,6 @@ namespace ScienceChecklist
 
 		public static void Init()
 		{
-			bool installed = false;
 			AssemblyLoader.loadedAssemblies.TypeOperation(t =>
 			{
 				switch (t.FullName)
@@ -31,23 +30,22 @@ namespace ScienceChecklist
 					try
 					{
 						ScienceAnimate = new API(t);
+						ScienceAnimateType = t;
+						Installed = true;
 					}
 					catch { } // just ignore it, it has been logged inside the constructor
-					ScienceAnimateType = t;
-					installed = true;
 					break;
 				case "DMModuleScienceAnimateGeneric.DMModuleScienceAnimateGeneric":
 					try
 					{
 						ScienceAnimateGeneric = new API(t);
+						ScienceAnimateGenericType = t;
+						Installed = true;
 					}
 					catch { } // just ignore it, it has been logged inside the constructor
-					ScienceAnimateGenericType = t;
-					installed = true;
 					break;
 				}
 			});
-			Installed = installed;
 		}
 
 		public static bool IsScienceAnimate(ModuleScienceExperiment module)
