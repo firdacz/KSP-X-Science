@@ -22,30 +22,48 @@ namespace ScienceChecklist
 
 		public static void Init()
 		{
-			AssemblyLoader.loadedAssemblies.TypeOperation(t =>
+			var logger = new Logger("DMagic");
+
+			foreach (var asm in AssemblyLoader.loadedAssemblies)
 			{
-				switch (t.FullName)
+				switch (asm.name)
 				{
-				case "DMagic.Part_Modules.DMModuleScienceAnimate":
+				// DMagic's Orbital Science (Magnetometer etc.)
+				case "DMagic":
 					try
 					{
-						ScienceAnimate = new API(t);
-						ScienceAnimateType = t;
+						ScienceAnimateType =
+							(ScienceAnimate =
+							new API(asm.typesDictionary
+							[typeof(PartModule)]
+							["DMModuleScienceAnimate"])
+							).type;
 						Installed = true;
 					}
-					catch { } // just ignore it, it has been logged inside the constructor
+					catch (Exception ex)
+					{
+						logger.LogError("Could not reflect DMagic's DMModuleScienceAnimate: " + ex.ToString());
+					}
 					break;
-				case "DMModuleScienceAnimateGeneric.DMModuleScienceAnimateGeneric":
+				// DMagic's generic module used e.g. by ReStock+ (if both installed)
+				case "DMModuleScienceAnimateGeneric":
 					try
 					{
-						ScienceAnimateGeneric = new API(t);
-						ScienceAnimateGenericType = t;
+						ScienceAnimateGenericType = 
+							(ScienceAnimateGeneric =
+							new API(asm.typesDictionary
+							[typeof(PartModule)]
+							["DMModuleScienceAnimateGeneric"])
+							).type;
 						Installed = true;
 					}
-					catch { } // just ignore it, it has been logged inside the constructor
+					catch (Exception ex)
+					{
+						logger.LogError("Could not reflect DMagic's DMModuleScienceAnimateGeneric: " + ex.ToString());
+					}
 					break;
 				}
-			});
+			}
 		}
 
 		public static bool IsScienceAnimate(ModuleScienceExperiment module)
@@ -57,6 +75,7 @@ namespace ScienceChecklist
 		{
 			readonly Logger _logger;
 
+			public readonly Type type;
 			readonly Func<ModuleScienceExperiment, bool> _canConduct;
 			readonly Action<ModuleScienceExperiment, bool> _gatherScienceData;
 			readonly Func<ModuleScienceExperiment, ExperimentSituations> _getSituation;
@@ -65,6 +84,7 @@ namespace ScienceChecklist
 			internal API(Type type)
 			{
 				_logger = new Logger(this);
+				this.type = type;
 
 				const BindingFlags flags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
 				var module = Expression.Parameter(
